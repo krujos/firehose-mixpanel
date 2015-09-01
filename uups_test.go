@@ -36,9 +36,19 @@ var _ = Describe("Uups", func() {
 		Ω(err).Should(BeNil())
 		Ω(cfenv).ShouldNot(BeNil())
 
-		mixPanel, err := GetUserProvidedServiceByName("uaa", cfenv)
-		Ω(mixPanel).ShouldNot(BeNil())
+		uaa, err := GetUserProvidedServiceByName("uaa", cfenv)
+		Ω(uaa).ShouldNot(BeNil())
 		Ω(err).Should(BeNil())
 	})
 
+	It("Should not get a service named foo", func() {
+		testEnv := cfenv.Env(validEnv)
+		cfenv, err := cfenv.New(testEnv)
+		Ω(err).Should(BeNil())
+		Ω(cfenv).ShouldNot(BeNil())
+
+		foo, err := GetUserProvidedServiceByName("foo", cfenv)
+		Ω(err).ShouldNot(BeNil())
+		Ω(foo).Should(BeNil())
+	})
 })
