@@ -14,7 +14,7 @@ var mixPanelChanel = make(chan map[string]interface{}, 50)
 //SendEventsToMixPanel does batch posts of firehose events to mix channel
 func SendEventsToMixPanel(mixPanel *cfenv.Service, msgChan chan *events.Envelope) {
 	for i := 0; i < 3; i++ {
-		go sender(strconv.Itoa(i))
+		go mixPanelWorker(strconv.Itoa(i))
 	}
 
 	for msg := range msgChan {
@@ -32,9 +32,13 @@ func SendEventsToMixPanel(mixPanel *cfenv.Service, msgChan chan *events.Envelope
 	}
 }
 
-func sender(id string) {
-	log.Println("Created a sender with id " + id)
+//Event to json turns a firehose event into a json representation
+func EventToJSON(event *events.Envelope) []byte {
+	return []byte("garbage")
+}
 
+func mixPanelWorker(id string) {
+	log.Println("Created a sender with id " + id)
 	events := make([]map[string]interface{}, 50)
 	count := 0
 	for {
