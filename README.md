@@ -9,7 +9,7 @@ Dump the Firehose to MixPanel, lets see what happens.
 $ uaac client add watchman --scope uaa.none --authorized_grant_types "client_credentials" --authorities doppler.firehose --redirect_uri http://example.com
 
 #Setup the service for uaa
-`cf cups uaa -p '{ "uri": "https://uaa.10.244.0.34.xip.io/oauth/token?grant_type=client_credentials", "client_id": "f2mp", "client_secret": "f2mp" }'`
+`cf cups uaa -p '{ "uri": "https://uaa.10.244.0.34.xip.io/", "client_id": "f2mp", "client_secret": "f2mp" }'`
 
 #Setup the service for MixPanel
 `cf cups mixpanel -p '{ "uri": "http://api.mixpanel.com/track/", "api_key": "your key", "api_secret": "your secret" }'`

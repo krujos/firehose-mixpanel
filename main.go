@@ -48,7 +48,6 @@ func getToken(appEnv *cfenv.App) string {
 
 	uaaConnection, err := uaaclientcredentials.New(uaaURL, skipSSLVerify, uaa.Credentials["client_id"].(string),
 		uaa.Credentials["client_secret"].(string))
-
 	dieIfError("Failed to setup uaa connection", err)
 
 	token, err := uaaConnection.GetBearerToken()
@@ -81,6 +80,9 @@ func getMixPanel(appEnv *cfenv.App) *cfenv.Service {
 }
 
 func main() {
+	if skipSSLVerify {
+		log.Println("SSL_VERIFY is set to false, will not verify ssl certs!")
+	}
 	appEnv, _ := cfenv.Current()
 	setupHTTP(appEnv.Port)
 	token := getToken(appEnv)
