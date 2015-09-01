@@ -21,9 +21,8 @@ var subscriptionID = "FirehoseToMixPanel"
 
 func dieIfError(msg string, err error) {
 	if nil != err {
-		log.Fatal(msg)
+		log.Print(msg)
 		log.Fatal(err)
-		os.Exit(1)
 	}
 }
 

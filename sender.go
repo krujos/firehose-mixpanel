@@ -33,8 +33,22 @@ func SendEventsToMixPanel(mixPanel *cfenv.Service, msgChan chan *events.Envelope
 }
 
 //EventToJSON turns a firehose event into a json representation
-func EventToJSON(event *events.Envelope) []byte {
-	return []byte("garbage")
+func EventToJSON(event *events.Envelope) *[]byte {
+	data := map[string]interface{}{
+		"eventtype":  event.GetEventType(),
+		"time":       event.GetTimestamp() / 1000000000,
+		"origin":     event.GetOrigin(),
+		"deployment": event.GetDeployment(),
+		"job":        event.GetJob(),
+		"index":      event.GetIndex(),
+		"ip":         event.GetIp(),
+	}
+	j, err := json.Marshal(data)
+	if nil != err {
+		log.Print("Failed to marshal event")
+		log.Print(data)
+	}
+	return &j
 }
 
 func mixPanelWorker(id string) {
