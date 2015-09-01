@@ -56,7 +56,7 @@ func getToken(appEnv *cfenv.App) string {
 	return token
 }
 
-func connectToFirehose(appEnv *cfenv.App, token string) {
+func connectToFirehose(appEnv *cfenv.App, token string) chan *events.Envelope {
 	doppler, err := GetUserProvidedServiceByName("doppler", appEnv)
 	dieIfError("Failed to get doppler service", err)
 	consumer := noaa.NewConsumer(doppler.Credentials["uri"].(string), &tls.Config{InsecureSkipVerify: skipSSLVerify}, nil)
@@ -70,11 +70,21 @@ func connectToFirehose(appEnv *cfenv.App, token string) {
 			fmt.Fprintf(os.Stderr, "%v\n", err.Error())
 		}
 	}()
+
+	return msgChan
+}
+
+func getMixPanel(appEnv *cfenv.App) *cfenv.Service {
+	mixPanel, err := GetUserProvidedServiceByName("mixpanel", appEnv)
+	dieIfError("Could not get MixPanel service", err)
+	return mixPanel
 }
 
 func main() {
 	appEnv, _ := cfenv.Current()
 	setupHTTP(appEnv.Port)
 	token := getToken(appEnv)
-	connectToFirehose(appEnv, token)
+	mixPanel := getMixPanel(appEnv)
+	msgChan := connectToFirehose(appEnv, token)
+	SendEventsToMixPanel(mixPanel, msgChan)
 }
