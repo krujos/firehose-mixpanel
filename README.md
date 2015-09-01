@@ -13,3 +13,9 @@ $ uaac client add watchman --scope uaa.none --authorized_grant_types "client_cre
 
 #Setup the service for MixPanel
 `cf cups mixpanel -p '{ "uri": "http://api.mixpanel.com/track/", "api_key": "your key", "api_secret": "your secret" }'`
+
+#Setup the service for doppler
+`cf cups doppler -p '{"uri": "wss://doppler.10.244.0.34.xip.io:443" }'`
+
+#If you're using bosh lite, or otherwise skipping ssl validation
+`cf set-env f2mp SSL_VERIFY false`

@@ -4,3 +4,4 @@ applications:
   services:
     - uaa
     - mixpanel
+    - doppler
