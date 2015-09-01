@@ -64,9 +64,6 @@ func connectToFirehose(appEnv *cfenv.App, token string) {
 	go func() {
 		defer close(msgChan)
 		errorChan := make(chan error)
-		if nil != err {
-			panic(err)
-		}
 		go consumer.Firehose(subscriptionID, token, msgChan, errorChan)
 
 		for err := range errorChan {

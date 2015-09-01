@@ -8,6 +8,22 @@
 			"Rev": "c682e189b94b0b2ec6edf12363df2eecf29d7256"
 		},
 		{
+			"ImportPath": "github.com/cloudfoundry/noaa",
+			"Rev": "add844f5f6a6e3205b26e6b527bd74a75091022c"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/sonde-go/events",
+			"Rev": "e9b4698e850553401d1d2dd998c756fdf29356ea"
+		},
+		{
+			"ImportPath": "github.com/gogo/protobuf/proto",
+			"Rev": "b9e369e8ffb6773efc654ea13594566404314ee1"
+		},
+		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Rev": "1551221275a7bd42978745a376b2531f791d88f3"
+		},
+		{
 			"ImportPath": "github.com/krujos/uaaclientcredentials",
 			"Rev": "bc54e8bf53c3ce458855be58c3583a267f6d6f8c"
 		},
