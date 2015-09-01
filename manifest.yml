@@ -1,0 +1,6 @@
+applications:
+- name: f2mp
+  memory: 256mb
+  services:
+    - uaa
+    - mixpanel

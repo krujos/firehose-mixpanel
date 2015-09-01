@@ -4,17 +4,19 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
+	"strconv"
+
+	"github.com/cloudfoundry-community/cfenv"
 )
 
 func root(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("Hello World")
 }
 
-func setupHTTP() {
+func setupHTTP(port int) {
 	http.HandleFunc("/", root)
 	go func() {
-		err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+		err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
 		if nil != err {
 			log.Fatal("ListenAndServe:", err)
 		}
@@ -22,5 +24,7 @@ func setupHTTP() {
 }
 
 func main() {
-	setupHTTP()
+	appEnv, _ := cfenv.Current()
+	setupHTTP(appEnv.Port)
+
 }
