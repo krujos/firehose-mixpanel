@@ -8,8 +8,22 @@
 			"Rev": "c682e189b94b0b2ec6edf12363df2eecf29d7256"
 		},
 		{
+			"ImportPath": "github.com/krujos/uaaclientcredentials",
+			"Rev": "bc54e8bf53c3ce458855be58c3583a267f6d6f8c"
+		},
+		{
 			"ImportPath": "github.com/mitchellh/mapstructure",
 			"Rev": "281073eb9eb092240d33ef253c404f1cca550309"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo",
+			"Comment": "v1.2.0-beta-17-gc5c7614",
+			"Rev": "c5c761488350e56a28c4a91da87e5db7020bedc8"
+		},
+		{
+			"ImportPath": "github.com/onsi/gomega",
+			"Comment": "v1.0-48-g766f404",
+			"Rev": "766f4042b942146e90594d145c5071fa92c0aa9a"
 		}
 	]
 }
