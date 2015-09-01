@@ -23,8 +23,14 @@ func setupHTTP(port int) {
 	}()
 }
 
+func getToken(appEnv cfenv.Services) string {
+	return "this is a dummy token"
+}
+
 func main() {
 	appEnv, _ := cfenv.Current()
 	setupHTTP(appEnv.Port)
+	token := getToken(appEnv.Services)
 
+	log.Printf("Using token" + token)
 }
