@@ -32,7 +32,7 @@ func SendEventsToMixPanel(mixPanel *cfenv.Service, msgChan chan *events.Envelope
 	}
 }
 
-//Event to json turns a firehose event into a json representation
+//EventToJSON turns a firehose event into a json representation
 func EventToJSON(event *events.Envelope) []byte {
 	return []byte("garbage")
 }
