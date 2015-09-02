@@ -2,6 +2,7 @@ package main_test
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/cloudfoundry/sonde-go/events"
 	. "github.com/krujos/firehose-mixpanel"
@@ -60,14 +61,16 @@ var _ = Describe("Sender", func() {
 			mixPanelChan := GetMixPanelChan()
 			var batch []byte
 			for i := 0; i < 50; i++ {
-				bytes := []byte("foo bar")
+				bytes := []byte("{'foo': 'bar'}")
 				mixPanelChan <- &bytes
 			}
 			batch = Collect(mixPanelChan)
 			Ω(batch).NotTo(BeNil())
 			var actual []map[string]interface{}
-			j := json.Unmarshal(batch, &actual)
-			Ω(j).To(HaveLen(50))
+			json.Unmarshal(batch, &actual)
+			Ω(actual).To(HaveLen(50))
+			Ω(actual[0]["foo"]).To(Equal("bar"))
+			log.Print(actual)
 		})
 	})
 })

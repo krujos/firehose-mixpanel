@@ -65,10 +65,11 @@ func EventToJSON(event *events.Envelope) *[]byte {
 //Collect gathers 50 events from the channel and returns
 //them as a batch
 func Collect(channel chan *[]byte) []byte {
-	var events []*[]byte
+	var events [][]byte
 	count := 0
 	for {
-		events = append(events, <-channel)
+		event := <-channel
+		events = append(events, *event)
 		count++
 		if 50 == count {
 			log.Println("Received 50 events!")
