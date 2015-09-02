@@ -3,6 +3,7 @@ package main_test
 import (
 	"encoding/json"
 	"log"
+	"sync"
 
 	"github.com/cloudfoundry/sonde-go/events"
 	. "github.com/krujos/firehose-mixpanel"
@@ -18,6 +19,16 @@ type MockSender struct {
 func (m MockSender) Send(b []byte) error {
 	m.Bytes = b
 	return nil
+}
+
+func testCollect(wg *sync.WaitGroup, mixPanelChan chan *[]byte) {
+	defer wg.Done()
+	batch := Collect(mixPanelChan)
+	Ω(batch).NotTo(BeNil())
+	var actual []interface{}
+	err := json.Unmarshal(batch, &actual)
+	Ω(err).Should(BeNil())
+	Ω(actual).To(HaveLen(50))
 }
 
 var _ = Describe("Sender", func() {
@@ -74,26 +85,25 @@ var _ = Describe("Sender", func() {
 		})
 
 		It("Should handle 100 events in chunks of 50", func() {
+			//This isn't the greatest test, if itr % 50 != 0 then the channel
+			//won't block and the test will pass... it does test that we're handleing
+			//in batches
 			mixPanelChan := GetMixPanelChan()
-			for i := 0; i < 100; i++ {
-				input := []byte("{\"foo\":\"bar\"}")
-				mixPanelChan <- &input
-			}
-			batch := Collect(mixPanelChan)
-			Ω(batch).NotTo(BeNil())
-			log.Println(string(batch))
-			var actual []interface{}
-			err := json.Unmarshal(batch, &actual)
-			Ω(err).Should(BeNil())
-			Ω(actual).To(HaveLen(50))
+			itr := 1000
+			var wg sync.WaitGroup
+			wg.Add(1 + (itr / 50))
+			go func() {
+				defer wg.Done()
+				for i := 0; i < itr; i++ {
+					input := []byte("{\"foo\":\"bar\"}")
+					mixPanelChan <- &input
+				}
+			}()
 
-			//Get the next 50
-			batch = Collect(mixPanelChan)
-			Ω(batch).NotTo(BeNil())
-			log.Println(string(batch))
-			err = json.Unmarshal(batch, &actual)
-			Ω(err).Should(BeNil())
-			Ω(actual).To(HaveLen(50))
+			for i := itr / 50; i > 0; i-- {
+				go testCollect(&wg, mixPanelChan)
+			}
+			wg.Wait()
 
 		})
 	})
