@@ -32,41 +32,43 @@ func testCollect(wg *sync.WaitGroup, mixPanelChan chan *[]byte) {
 }
 
 var _ = Describe("Sender", func() {
-	var event *events.Envelope
-	origin := "origin"
-	var timestamp int64 = 2000000000
-	deployment := "deployment"
-	ip := "10.10.10.1"
-	job := "job"
-	index := "0"
-	eventType := events.Envelope_HttpStart
-	BeforeEach(func() {
-		event = &events.Envelope{
-			Origin:     &origin,
-			Timestamp:  &timestamp,
-			Deployment: &deployment,
-			Ip:         &ip,
-			Job:        &job,
-			Index:      &index,
-			EventType:  &eventType,
-		}
-	})
+	Describe("Envelope Processing", func() {
 
-	It("Should translate the event into json", func() {
-		j := EventToJSON(event)
-		Ω(j).ShouldNot(BeNil())
-	})
+		var event *events.Envelope
+		origin := "origin"
+		var timestamp int64 = 2000000000
+		deployment := "deployment"
+		ip := "10.10.10.1"
+		job := "job"
+		index := "0"
+		eventType := events.Envelope_HttpStart
+		BeforeEach(func() {
+			event = &events.Envelope{
+				Origin:     &origin,
+				Timestamp:  &timestamp,
+				Deployment: &deployment,
+				Ip:         &ip,
+				Job:        &job,
+				Index:      &index,
+				EventType:  &eventType,
+			}
+		})
 
-	It("Should set the proper envelope fields", func() {
-		var actual map[string]interface{}
-		err := json.Unmarshal(*(EventToJSON(event)), &actual)
-		Ω(err).Should(BeNil())
-		Ω(actual["origin"]).Should(Equal(origin))
-		Ω(actual["ip"]).Should(Equal(ip))
-		Ω(actual["job"]).Should(Equal(job))
-		Ω(actual["time"]).Should(Equal(float64(2)))
-	})
+		It("Should translate the event into json", func() {
+			j := EventToJSON(event)
+			Ω(j).ShouldNot(BeNil())
+		})
 
+		It("Should set the proper envelope fields", func() {
+			var actual map[string]interface{}
+			err := json.Unmarshal(*(EventToJSON(event)), &actual)
+			Ω(err).Should(BeNil())
+			Ω(actual["origin"]).Should(Equal(origin))
+			Ω(actual["ip"]).Should(Equal(ip))
+			Ω(actual["job"]).Should(Equal(job))
+			Ω(actual["time"]).Should(Equal(float64(2)))
+		})
+	})
 	Describe("The worker", func() {
 		It("Should append 50 events", func() {
 			mixPanelChan := GetMixPanelChan()
@@ -104,7 +106,6 @@ var _ = Describe("Sender", func() {
 				go testCollect(&wg, mixPanelChan)
 			}
 			wg.Wait()
-
 		})
 	})
 })
