@@ -72,5 +72,29 @@ var _ = Describe("Sender", func() {
 			Ω(err).Should(BeNil())
 			Ω(actual).To(HaveLen(50))
 		})
+
+		It("Should handle 100 events in chunks of 50", func() {
+			mixPanelChan := GetMixPanelChan()
+			for i := 0; i < 100; i++ {
+				input := []byte("{\"foo\":\"bar\"}")
+				mixPanelChan <- &input
+			}
+			batch := Collect(mixPanelChan)
+			Ω(batch).NotTo(BeNil())
+			log.Println(string(batch))
+			var actual []interface{}
+			err := json.Unmarshal(batch, &actual)
+			Ω(err).Should(BeNil())
+			Ω(actual).To(HaveLen(50))
+
+			//Get the next 50
+			batch = Collect(mixPanelChan)
+			Ω(batch).NotTo(BeNil())
+			log.Println(string(batch))
+			err = json.Unmarshal(batch, &actual)
+			Ω(err).Should(BeNil())
+			Ω(actual).To(HaveLen(50))
+
+		})
 	})
 })
