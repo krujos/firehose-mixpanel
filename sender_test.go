@@ -120,7 +120,8 @@ var _ = Describe("Sender", func() {
 			server = ghttp.NewServer()
 			server.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("POST", "http://api.mixpanel.com/track", "data="+encodedString),
+					ghttp.VerifyRequest("POST", "/track"),
+					ghttp.VerifyFormKV("data", encodedString),
 					ghttp.RespondWith(statusCode, nil),
 				))
 		})
@@ -129,13 +130,11 @@ var _ = Describe("Sender", func() {
 			server.Close()
 		})
 
-		It("should base 64 encode some stuff", func() {
-
-			m := MixPanelSender{}
+		It("should base send requests to mix pannel", func() {
+			m := MixPanelSender{URL: server.URL()}
 			err := m.Send(data)
 			Ω(err).Should(BeNil())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
-
 		})
 	})
 })

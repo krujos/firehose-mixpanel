@@ -26,13 +26,15 @@ type Sender interface {
 }
 
 //MixPanelSender sends to MixPanel
-type MixPanelSender struct{}
+type MixPanelSender struct {
+	URL string
+}
 
 //Send to MixPanel
 func (m MixPanelSender) Send(bytes []byte) error {
 	encodedString := base64.StdEncoding.EncodeToString(bytes)
 	log.Println("Sending " + encodedString)
-	r, err := http.PostForm("http://api.mixpanel.com/track", url.Values{"data": {encodedString}})
+	r, err := http.PostForm(m.URL+"/track", url.Values{"data": {encodedString}})
 	if nil != err && r.StatusCode != http.StatusOK {
 		return errors.New("Server returned status:" + string(r.StatusCode))
 	}
@@ -41,14 +43,14 @@ func (m MixPanelSender) Send(bytes []byte) error {
 
 //SendEventsToMixPanel does batch posts of firehose events to mix channel
 func SendEventsToMixPanel(mixPanel *cfenv.Service, msgChan chan *events.Envelope) {
-	for i := 0; i < 3; i++ {
-		//		go MixPanelWorker(strconv.Itoa(i), MixPanelSender{})
-	}
-
-	for msg := range msgChan {
-		j := EventToJSON(msg)
-		mixPanelChanel <- j
-	}
+	// for i := 0; i < 3; i++ {
+	// 	//		go MixPanelWorker(strconv.Itoa(i), MixPanelSender{})
+	// }
+	//
+	// for msg := range msgChan {
+	// 	j := EventToJSON(msg)
+	// 	mixPanelChanel <- j
+	// }
 }
 
 //EventToJSON turns a firehose event into a json representation
