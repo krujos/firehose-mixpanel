@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -18,6 +19,7 @@ var mixPanelChanel = make(chan *[]byte, 50)
 //TODO Gross, get the mixpanel sending stuff into an object.
 var mixPanelToken string
 
+//SetMixPanelToken to use when talking to mixpanel
 func SetMixPanelToken(token string) {
 	mixPanelToken = token
 }
@@ -43,15 +45,22 @@ func (m MixPanelSender) Send(bytes []byte) error {
 	encodedString := base64.StdEncoding.EncodeToString(bytes)
 	log.Printf("Sending data to %s", m.URL)
 	r, err := http.PostForm(m.URL, url.Values{"data": {encodedString}})
+	defer r.Body.Close()
+	body, err := ioutil.ReadAll(r.Body)
+	log.Printf("Mixpanel returned %s", body)
 	if nil != err && r.StatusCode != http.StatusOK {
 		return errors.New("Server returned status:" + string(r.StatusCode))
 	}
-	return err
+	if '1' != body[0] {
+		return errors.New("Track was not successful")
+	}
+	return nil
 }
 
 //SendEventsToMixPanel does batch posts of firehose events to mix channel
 func SendEventsToMixPanel(mixPanel *cfenv.Service, msgChan chan *events.Envelope) {
 	mixPanelToken = mixPanel.Credentials["token"].(string)
+	log.Println("Using Mixpanel Token " + mixPanelToken)
 	for i := 0; i < 3; i++ {
 		go MixPanelWorker(strconv.Itoa(i),
 			MixPanelSender{URL: mixPanel.Credentials["uri"].(string)})
@@ -64,8 +73,7 @@ func SendEventsToMixPanel(mixPanel *cfenv.Service, msgChan chan *events.Envelope
 
 //EventToJSON turns a firehose event into a json representation
 func EventToJSON(event *events.Envelope) *[]byte {
-	data := map[string]interface{}{
-		"event":      event.String(),
+	props := map[string]interface{}{
 		"time":       event.GetTimestamp() / 1000000000,
 		"origin":     event.GetOrigin(),
 		"deployment": event.GetDeployment(),
@@ -73,6 +81,10 @@ func EventToJSON(event *events.Envelope) *[]byte {
 		"index":      event.GetIndex(),
 		"ip":         event.GetIp(),
 		"token":      mixPanelToken,
+	}
+	data := map[string]interface{}{
+		"event":      event.String(),
+		"properties": props,
 	}
 
 	j, err := json.Marshal(data)

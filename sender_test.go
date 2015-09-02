@@ -63,13 +63,16 @@ var _ = Describe("Sender", func() {
 
 		It("Should set the proper envelope fields", func() {
 			var actual map[string]interface{}
+			var props map[string]interface{}
+
 			err := json.Unmarshal(*(EventToJSON(event)), &actual)
 			Ω(err).Should(BeNil())
-			Ω(actual["origin"]).Should(Equal(origin))
-			Ω(actual["ip"]).Should(Equal(ip))
-			Ω(actual["job"]).Should(Equal(job))
-			Ω(actual["time"]).Should(Equal(float64(2)))
-			Ω(actual["token"]).Should(Equal("mixpanel-token"))
+			props = actual["properties"].(map[string]interface{})
+			Ω(props["origin"]).Should(Equal(origin))
+			Ω(props["ip"]).Should(Equal(ip))
+			Ω(props["job"]).Should(Equal(job))
+			Ω(props["time"]).Should(Equal(float64(2)))
+			Ω(props["token"]).Should(Equal("mixpanel-token"))
 		})
 	})
 
@@ -124,7 +127,7 @@ var _ = Describe("Sender", func() {
 				ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/track"),
 					ghttp.VerifyFormKV("data", encodedString),
-					ghttp.RespondWith(statusCode, nil),
+					ghttp.RespondWith(statusCode, "1"),
 				))
 		})
 
@@ -139,4 +142,33 @@ var _ = Describe("Sender", func() {
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
 		})
 	})
+
+	Describe("The sender gets an error", func() {
+		var server *ghttp.Server
+		statusCode := 200
+		data := []byte("[{\"foo\":\"bar\"}]")
+
+		BeforeEach(func() {
+			encodedString := base64.StdEncoding.EncodeToString(data)
+			server = ghttp.NewServer()
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/track"),
+					ghttp.VerifyFormKV("data", encodedString),
+					ghttp.RespondWith(statusCode, "0"),
+				))
+		})
+
+		AfterEach(func() {
+			server.Close()
+		})
+
+		It("should send base64 encoded request requests to mix pannel", func() {
+			m := MixPanelSender{URL: server.URL() + "/track"}
+			err := m.Send(data)
+			Ω(err).ShouldNot(BeNil())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+		})
+	})
+
 })
