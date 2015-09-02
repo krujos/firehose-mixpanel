@@ -12,7 +12,7 @@ $ uaac client add watchman --scope uaa.none --authorized_grant_types "client_cre
 `cf cups uaa -p '{ "uri": "https://uaa.10.244.0.34.xip.io/", "client_id": "f2mp", "client_secret": "f2mp" }'`
 
 #Setup the service for MixPanel
-`cf cups mixpanel -p '{ "uri": "http://api.mixpanel.com/track/", "api_key": "your key", "api_secret": "your secret" }'`
+`cf cups mixpanel -p '{ "uri": "http://api.mixpanel.com/track/", "api_key": "your key", "api_secret": "your secret", "token", "your token" }'`
 
 #Setup the service for doppler
 `cf cups doppler -p '{"uri": "wss://doppler.10.244.0.34.xip.io:443" }'`

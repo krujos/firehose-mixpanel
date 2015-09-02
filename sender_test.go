@@ -53,6 +53,7 @@ var _ = Describe("Sender", func() {
 				Index:      &index,
 				EventType:  &eventType,
 			}
+			SetMixPanelToken("mixpanel-token")
 		})
 
 		It("Should translate the event into json", func() {
@@ -68,6 +69,7 @@ var _ = Describe("Sender", func() {
 			Ω(actual["ip"]).Should(Equal(ip))
 			Ω(actual["job"]).Should(Equal(job))
 			Ω(actual["time"]).Should(Equal(float64(2)))
+			Ω(actual["token"]).Should(Equal("mixpanel-token"))
 		})
 	})
 
@@ -131,7 +133,7 @@ var _ = Describe("Sender", func() {
 		})
 
 		It("should send base64 encoded request requests to mix pannel", func() {
-			m := MixPanelSender{URL: server.URL()}
+			m := MixPanelSender{URL: server.URL() + "/track"}
 			err := m.Send(data)
 			Ω(err).Should(BeNil())
 			Ω(server.ReceivedRequests()).Should(HaveLen(1))
