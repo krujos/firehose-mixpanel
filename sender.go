@@ -2,40 +2,51 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
-	"strconv"
 
 	"github.com/cloudfoundry-community/cfenv"
 	"github.com/cloudfoundry/sonde-go/events"
 )
 
-var mixPanelChanel = make(chan map[string]interface{}, 50)
+var mixPanelChanel = make(chan *[]byte, 50)
+
+//GetMixPanelChan returns the channel to send events to MixPanel, used as a
+//test hook
+func GetMixPanelChan() chan *[]byte {
+	return mixPanelChanel
+}
+
+//Sender interface is what you must implmenet to send something to mixpanel
+type Sender interface {
+	Send(bytes []byte) error
+}
+
+//MixPanelSender sends to MixPanel
+type MixPanelSender struct{}
+
+//Send to MixPanel
+func (m MixPanelSender) Send(bytes []byte) error {
+	log.Fatal("NYI")
+	return errors.New("NYOI")
+}
 
 //SendEventsToMixPanel does batch posts of firehose events to mix channel
 func SendEventsToMixPanel(mixPanel *cfenv.Service, msgChan chan *events.Envelope) {
 	for i := 0; i < 3; i++ {
-		go mixPanelWorker(strconv.Itoa(i))
+		//		go MixPanelWorker(strconv.Itoa(i), MixPanelSender{})
 	}
 
 	for msg := range msgChan {
-		eventType := msg.GetEventType()
-		event := map[string]interface{}{
-			"EventType":  eventType,
-			"Time":       msg.GetTimestamp() / 1000000000,
-			"Origin":     msg.GetOrigin(),
-			"Deployment": msg.GetDeployment(),
-			"Job":        msg.GetJob(),
-			"Index":      msg.GetIndex(),
-			"Ip":         msg.GetIp(),
-		}
-		mixPanelChanel <- event
+		j := EventToJSON(msg)
+		mixPanelChanel <- j
 	}
 }
 
 //EventToJSON turns a firehose event into a json representation
 func EventToJSON(event *events.Envelope) *[]byte {
 	data := map[string]interface{}{
-		"eventtype":  event.GetEventType(),
+		"event":      event.String(),
 		"time":       event.GetTimestamp() / 1000000000,
 		"origin":     event.GetOrigin(),
 		"deployment": event.GetDeployment(),
@@ -51,19 +62,31 @@ func EventToJSON(event *events.Envelope) *[]byte {
 	return &j
 }
 
-func mixPanelWorker(id string) {
-	log.Println("Created a sender with id " + id)
-	events := make([]map[string]interface{}, 50)
+//Collect gathers 50 events from the channel and returns
+//them as a batch
+func Collect(channel chan *[]byte) []byte {
+	var events []*[]byte
 	count := 0
 	for {
-		events = append(events, <-mixPanelChanel)
+		events = append(events, <-channel)
 		count++
 		if 50 == count {
-			log.Println(id + " Received 50 events!")
+			log.Println("Received 50 events!")
 			count = 0
-			events = make([]map[string]interface{}, 50)
-			j, _ := json.Marshal(events)
-			log.Printf("%v", j)
+			j, err := json.Marshal(events)
+			if nil != err {
+				log.Println("Failed to marshal events to json")
+			}
+			return j
 		}
 	}
 }
+
+//MixPanelWorker collects events to send to mixpanel in batches of 50
+// func MixPanelWorker(id string, sender Sender) {
+// 	log.Println("Created a sender with id " + id)
+//   for {
+//     batch := Collect(mixPanelChanel)
+//     log.Printf("%v", batch)
+//   }
+// }
