@@ -41,7 +41,7 @@ type MixPanelSender struct {
 //Send to MixPanel
 func (m MixPanelSender) Send(bytes []byte) error {
 	encodedString := base64.StdEncoding.EncodeToString(bytes)
-	log.Println("Sending " + encodedString)
+	log.Printf("Sending data to %s", m.URL)
 	r, err := http.PostForm(m.URL, url.Values{"data": {encodedString}})
 	if nil != err && r.StatusCode != http.StatusOK {
 		return errors.New("Server returned status:" + string(r.StatusCode))
