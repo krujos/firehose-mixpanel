@@ -83,7 +83,7 @@ func EventToJSON(event *events.Envelope) *[]byte {
 		"token":      mixPanelToken,
 	}
 	data := map[string]interface{}{
-		"event":      event.String(),
+		"event":      event.GetEventType().String(),
 		"properties": props,
 	}
 
