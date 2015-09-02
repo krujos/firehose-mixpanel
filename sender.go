@@ -65,21 +65,18 @@ func EventToJSON(event *events.Envelope) *[]byte {
 //Collect gathers 50 events from the channel and returns
 //them as a batch
 func Collect(channel chan *[]byte) []byte {
-	var events [][]byte
+	events := "["
 	count := 0
 	for {
 		event := <-channel
-		events = append(events, *event)
+		events += string(*event)
 		count++
 		if 50 == count {
 			log.Println("Received 50 events!")
-			count = 0
-			j, err := json.Marshal(events)
-			if nil != err {
-				log.Println("Failed to marshal events to json")
-			}
-			return j
+			events += "]"
+			return []byte(events)
 		}
+		events += ","
 	}
 }
 

@@ -59,18 +59,18 @@ var _ = Describe("Sender", func() {
 	Describe("The worker", func() {
 		It("Should append 50 events", func() {
 			mixPanelChan := GetMixPanelChan()
-			var batch []byte
 			for i := 0; i < 50; i++ {
-				bytes := []byte("{'foo': 'bar'}")
-				mixPanelChan <- &bytes
+				input := []byte("{\"foo\":\"bar\"}")
+				mixPanelChan <- &input
 			}
-			batch = Collect(mixPanelChan)
+			batch := Collect(mixPanelChan)
+
 			Ω(batch).NotTo(BeNil())
-			var actual []map[string]interface{}
-			json.Unmarshal(batch, &actual)
+			log.Println(string(batch))
+			var actual []interface{}
+			err := json.Unmarshal(batch, &actual)
+			Ω(err).Should(BeNil())
 			Ω(actual).To(HaveLen(50))
-			Ω(actual[0]["foo"]).To(Equal("bar"))
-			log.Print(actual)
 		})
 	})
 })
