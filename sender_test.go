@@ -65,6 +65,9 @@ var _ = Describe("Sender", func() {
 			}
 			batch = Collect(mixPanelChan)
 			Ω(batch).NotTo(BeNil())
+			var actual []map[string]interface{}
+			j := json.Unmarshal(batch, &actual)
+			Ω(j).To(HaveLen(50))
 		})
 	})
 })
