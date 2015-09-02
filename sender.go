@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"log"
+	"net/http"
+	"net/url"
 
 	"github.com/cloudfoundry-community/cfenv"
 	"github.com/cloudfoundry/sonde-go/events"
@@ -27,8 +29,10 @@ type MixPanelSender struct{}
 
 //Send to MixPanel
 func (m MixPanelSender) Send(bytes []byte) error {
-	log.Fatal("NYI")
-	return errors.New("NYOI")
+	encodedString := base64.StdEncoding.EncodeToString(bytes)
+	log.Println("Sending " + encodedString)
+	_, err := http.PostForm("http://api.mixpanel.com/track", url.Values{"data": {encodedString}})
+	return err
 }
 
 //SendEventsToMixPanel does batch posts of firehose events to mix channel
@@ -72,7 +76,6 @@ func Collect(channel chan *[]byte) []byte {
 		events += string(*event)
 		count++
 		if 50 == count {
-			log.Println("Received 50 events!")
 			events += "]"
 			return []byte(events)
 		}

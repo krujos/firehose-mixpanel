@@ -1,8 +1,8 @@
 package main_test
 
 import (
+	"encoding/base64"
 	"encoding/json"
-	"log"
 	"sync"
 
 	"github.com/cloudfoundry/sonde-go/events"
@@ -10,6 +10,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/ghttp"
 )
 
 type MockSender struct {
@@ -69,6 +70,7 @@ var _ = Describe("Sender", func() {
 			Ω(actual["time"]).Should(Equal(float64(2)))
 		})
 	})
+
 	Describe("The worker", func() {
 		It("Should append 50 events", func() {
 			mixPanelChan := GetMixPanelChan()
@@ -79,7 +81,6 @@ var _ = Describe("Sender", func() {
 			batch := Collect(mixPanelChan)
 
 			Ω(batch).NotTo(BeNil())
-			log.Println(string(batch))
 			var actual []interface{}
 			err := json.Unmarshal(batch, &actual)
 			Ω(err).Should(BeNil())
@@ -106,6 +107,34 @@ var _ = Describe("Sender", func() {
 				go testCollect(&wg, mixPanelChan)
 			}
 			wg.Wait()
+		})
+	})
+
+	Describe("The sender", func() {
+		var server *ghttp.Server
+		statusCode := 200
+		data := []byte("[{\"foo\":\"bar\"}]")
+
+		BeforeEach(func() {
+			encodedString := base64.StdEncoding.EncodeToString(data)
+			server = ghttp.NewServer()
+			server.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "http://api.mixpanel.com/track", "data="+encodedString),
+					ghttp.RespondWith(statusCode, nil),
+				))
+		})
+
+		AfterEach(func() {
+			server.Close()
+		})
+		It("should base 64 encode some stuff", func() {
+
+			m := MixPanelSender{}
+			err := m.Send(data)
+			Ω(err).Should(BeNil())
+			Ω(server.ReceivedRequests()).Should(HaveLen(1))
+
 		})
 	})
 })
