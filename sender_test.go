@@ -130,7 +130,7 @@ var _ = Describe("Sender", func() {
 			server.Close()
 		})
 
-		It("should base send requests to mix pannel", func() {
+		It("should send base64 encoded request requests to mix pannel", func() {
 			m := MixPanelSender{URL: server.URL()}
 			err := m.Send(data)
 			Ω(err).Should(BeNil())

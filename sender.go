@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/cloudfoundry-community/cfenv"
 	"github.com/cloudfoundry/sonde-go/events"
@@ -43,14 +44,13 @@ func (m MixPanelSender) Send(bytes []byte) error {
 
 //SendEventsToMixPanel does batch posts of firehose events to mix channel
 func SendEventsToMixPanel(mixPanel *cfenv.Service, msgChan chan *events.Envelope) {
-	// for i := 0; i < 3; i++ {
-	// 	//		go MixPanelWorker(strconv.Itoa(i), MixPanelSender{})
-	// }
-	//
-	// for msg := range msgChan {
-	// 	j := EventToJSON(msg)
-	// 	mixPanelChanel <- j
-	// }
+	for i := 0; i < 3; i++ {
+		go MixPanelWorker(strconv.Itoa(i), MixPanelSender{})
+	}
+
+	for msg := range msgChan {
+		mixPanelChanel <- EventToJSON(msg)
+	}
 }
 
 //EventToJSON turns a firehose event into a json representation
@@ -90,10 +90,10 @@ func Collect(channel chan *[]byte) []byte {
 }
 
 //MixPanelWorker collects events to send to mixpanel in batches of 50
-// func MixPanelWorker(id string, sender Sender) {
-// 	log.Println("Created a sender with id " + id)
-//   for {
-//     batch := Collect(mixPanelChanel)
-//     log.Printf("%v", batch)
-//   }
-// }
+func MixPanelWorker(id string, sender Sender) {
+	log.Println("Created a sender with id " + id)
+	m := MixPanelSender{URL: "http://api.mixpanel.com"}
+	for {
+		m.Send(Collect(mixPanelChanel))
+	}
+}
