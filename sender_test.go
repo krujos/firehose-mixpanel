@@ -128,6 +128,7 @@ var _ = Describe("Sender", func() {
 		AfterEach(func() {
 			server.Close()
 		})
+
 		It("should base 64 encode some stuff", func() {
 
 			m := MixPanelSender{}

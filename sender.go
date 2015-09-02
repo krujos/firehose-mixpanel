@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"net/url"
@@ -31,7 +32,10 @@ type MixPanelSender struct{}
 func (m MixPanelSender) Send(bytes []byte) error {
 	encodedString := base64.StdEncoding.EncodeToString(bytes)
 	log.Println("Sending " + encodedString)
-	_, err := http.PostForm("http://api.mixpanel.com/track", url.Values{"data": {encodedString}})
+	r, err := http.PostForm("http://api.mixpanel.com/track", url.Values{"data": {encodedString}})
+	if nil != err && r.StatusCode != http.StatusOK {
+		return errors.New("Server returned status:" + string(r.StatusCode))
+	}
 	return err
 }
 
